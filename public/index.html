@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acong T Archive — Preloved & Secondhand Marketplace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- ================= NAVBAR ================= -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="location.reload()">
+                <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-extrabold text-xl">AT</div>
+                <div>
+                    <span class="font-extrabold text-xl tracking-tight text-slate-900">Acong T Archive — Preloved & Secondhand Marketplace</span>
+                    <span id="roleBadge" class="hidden ml-2 text-xs font-semibold px-2.5 py-0.5 rounded-full"></span>
+                    <span id="dbModeBadge" class="ml-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-500">Mengecek koneksi...</span>
+                </div>
+            </div>
+
+            <!-- Menu Navigasi User -->
+            <div id="userNav" class="hidden items-center gap-2 sm:gap-3">
+                <button onclick="switchUserTab('shop')" id="tabBtnShop" class="px-3.5 py-2 rounded-lg text-sm font-semibold bg-indigo-50 text-indigo-600">Belanja</button>
+                <button onclick="switchUserTab('orders')" id="tabBtnOrders" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100">Status Order</button>
+                <button onclick="toggleCart(true)" class="relative px-3.5 py-2 rounded-lg text-sm font-semibold bg-slate-900 text-white hover:bg-slate-800 flex items-center gap-2">
+                    <span>Keranjang</span>
+                    <span id="cartCount" class="bg-indigo-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+                </button>
+                <div class="h-5 w-px bg-slate-200 mx-1 hidden sm:block"></div>
+                <span id="userNameDisplay" class="text-sm font-bold text-slate-700 hidden sm:inline"></span>
+                <button onclick="logout()" class="text-sm font-bold text-rose-600 hover:text-rose-700 ml-2">Keluar</button>
+            </div>
+
+            <!-- Menu Navigasi Admin -->
+            <div id="adminNav" class="hidden items-center gap-3">
+                <span id="adminNameDisplay" class="text-sm font-bold text-slate-700"></span>
+                <button onclick="logout()" class="px-3.5 py-2 rounded-lg text-sm font-semibold bg-rose-50 text-rose-600 hover:bg-rose-100">Keluar</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ================= 1. HALAMAN LOGIN & REGISTER ================= -->
+    <main id="authSection" class="flex-1 flex items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm max-w-md w-full p-8">
+            <div class="text-center mb-6">
+                <h1 class="text-2xl font-extrabold text-slate-900">Selamat Datang Di AT</h1>
+                <p class="text-sm text-slate-500 mt-1">Marketplace barang preloved & secondhand terpercaya</p>
+            </div>
+
+            <!-- Alert Box Notifikasi -->
+            <div id="authAlert" class="hidden mb-4 p-3 rounded-xl text-xs font-bold"></div>
+
+            <!-- Tab Switcher Login / Register -->
+            <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl mb-6">
+                <button type="button" onclick="toggleAuthMode('login')" id="btnModeLogin" class="py-2 text-sm font-bold rounded-lg bg-white text-slate-900 shadow-sm">Login</button>
+                <button type="button" onclick="toggleAuthMode('register')" id="btnModeRegister" class="py-2 text-sm font-bold rounded-lg text-slate-500">Registrasi</button>
+            </div>
+
+            <!-- Form Login -->
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Email</label>
+                    <input type="email" id="loginEmail" required placeholder="user@.acong.com" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Password</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm">
+                </div>
+                <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm transition">Masuk Sekarang</button>
+
+                <!-- Tombol Pintas 1x Klik Login -->
+                <div class="pt-3 border-t border-slate-100">
+                    <p class="text-xs font-bold text-slate-500 mb-2 text-center">Atau klik tombol di bawah untuk langsung masuk:</p>
+                    <!-- <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="quickLogin('user@qondis.com', 'user123')" class="py-2 px-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition">
+                            ⚡ Masuk sbg User
+                        </button>
+                        <button type="button" onclick="quickLogin('admin@qondis.com', 'admin123')" class="py-2 px-3 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl text-xs font-bold transition">
+                            🛡️ Masuk sbg Admin
+                        </button>
+                    </div> -->
+                </div>
+            </form>
+
+            <!-- Form Register -->
+            <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nama Lengkap</label>
+                    <input type="text" id="regName" required placeholder="Nama Lengkap Anda" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Email</label>
+                    <input type="email" id="regEmail" required placeholder="nama@email.com" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Password</label>
+                    <input type="password" id="regPassword" required placeholder="Buat password" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Pilih Role Akun</label>
+                    <select id="regRole" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm bg-white">
+                        <option value="user">Pembeli (User)</option>
+                        <option value="admin">Pengelola (Admin)</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm transition">Daftar & Buat Akun</button>
+            </form>
+        </div>
+    </main>
+
+    <!-- ================= 2. DASHBOARD USER (PEMBELI) ================= -->
+    <section id="userDashboard" class="hidden flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="userShopView">
+            <div class="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl p-6 sm:p-8 text-white mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <span class="bg-white/20 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Katalog Terverifikasi</span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold mt-2">Belanja Barang Preloved Berkualitas</h2>
+                    <p class="text-indigo-100 text-sm mt-1">Pilih barang, masukkan ke keranjang, lakukan pembayaran, dan pantau status konfirmasi Admin.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-extrabold text-slate-900">Katalog Produk Tersedia</h3>
+                <button onclick="loadProducts()" class="text-sm font-semibold text-indigo-600 hover:underline">Muat Ulang</button>
+            </div>
+
+            <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+        </div>
+
+        <!-- Sub-Tab: Status Pesanan User -->
+        <div id="userOrdersView" class="hidden">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-xl font-extrabold text-slate-900">Riwayat & Status Pesanan Saya</h3>
+                    <p class="text-sm text-slate-500">Status akan berubah menjadi <b>Dikonfirmasi (ACC)</b> setelah disetujui Admin.</p>
+                </div>
+                <button onclick="loadUserOrders()" class="px-4 py-2 bg-white border border-slate-300 rounded-xl text-sm font-semibold hover:bg-slate-50">Refresh Status</button>
+            </div>
+            <div id="userOrdersList" class="space-y-4"></div>
+        </div>
+    </section>
+
+    <!-- ================= 3. DASHBOARD ADMIN ================= -->
+    <section id="adminDashboard" class="hidden flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+        
+        <!-- Tabel Konfirmasi Pesanan (ACC / Tolak) -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h2 class="text-xl font-extrabold text-slate-900">Daftar Pesanan Masuk (Konfirmasi Admin)</h2>
+                    <p class="text-sm text-slate-500">Klik tombol hijau <b>ACC Pesanan</b> untuk mengonfirmasi pembayaran pembeli.</p>
+                </div>
+                <button onclick="loadAdminOrders()" class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-sm font-bold hover:bg-indigo-100">Refresh Pesanan</button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-200 text-xs font-bold uppercase text-slate-500 bg-slate-50">
+                            <th class="p-3.5">ID Order</th>
+                            <th class="p-3.5">Pembeli</th>
+                            <th class="p-3.5">Barang Dibeli</th>
+                            <th class="p-3.5">Total & Pembayaran</th>
+                            <th class="p-3.5">Status Order</th>
+                            <th class="p-3.5 text-right">Aksi Konfirmasi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminOrdersTable" class="divide-y divide-slate-200 text-sm"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Kelola & Tambah Produk -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm h-fit">
+                <h3 class="text-lg font-extrabold text-slate-900 mb-4">Tambah Produk Baru</h3>
+                <form onsubmit="handleAddProduct(event)" class="space-y-3.5 text-sm">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nama Barang</label>
+                        <input type="text" id="prodName" required placeholder="Contoh: Kamera Sony A6000" class="w-full px-3.5 py-2 rounded-xl border border-slate-300">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Kategori</label>
+                            <input type="text" id="prodCategory" required placeholder="Elektronik / Fashion" class="w-full px-3.5 py-2 rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Kondisi</label>
+                            <input type="text" id="prodCondition" required placeholder="Like New (95%)" class="w-full px-3.5 py-2 rounded-xl border border-slate-300">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Harga (Rp)</label>
+                            <input type="number" id="prodPrice" required placeholder="550000" class="w-full px-3.5 py-2 rounded-xl border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Stok</label>
+                            <input type="number" id="prodStock" required value="2" min="1" class="w-full px-3.5 py-2 rounded-xl border border-slate-300">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">URL Gambar</label>
+                        <input type="url" id="prodImage" required placeholder="https://images.unsplash.com/..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Deskripsi</label>
+                        <textarea id="prodDesc" rows="2" required placeholder="Kondisi mulus lengkap..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300"></textarea>
+                    </div>
+                    <button type="submit" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl">Simpan ke Katalog</button>
+                </form>
+            </div>
+
+            <div class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h3 class="text-lg font-extrabold text-slate-900 mb-4">Katalog Barang Aktif</h3>
+                <div id="adminProductList" class="divide-y divide-slate-200"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= MODAL KERANJANG & DUMMY PAY ================= -->
+    <div id="cartModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex justify-end">
+        <div class="bg-white w-full max-w-md h-full flex flex-col justify-between p-6 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-4">
+                <h3 class="text-lg font-extrabold text-slate-900">Keranjang & Pembayaran</h3>
+                <button onclick="toggleCart(false)" class="text-slate-400 hover:text-slate-700 font-bold text-2xl">&times;</button>
+            </div>
+
+            <div id="cartItemsContainer" class="flex-1 overflow-y-auto py-4 space-y-3"></div>
+
+            <div class="border-t border-slate-200 pt-4 space-y-4">
+                <div class="flex items-center justify-between text-base font-extrabold text-slate-900">
+                    <span>Total Bayar</span>
+                    <span id="cartTotalDisplay" class="text-indigo-600">Rp 0</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Metode Pembayaran (Dummy Pay)</label>
+                    <select id="paymentMethod" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-slate-50 font-semibold">
+                        <option value="QRIS Instant (Dummy)">QRIS Instant (Otomatis)</option>
+                        <option value="BCA Virtual Account (Dummy)">BCA Virtual Account</option>
+                        <option value="GoPay / Dana (Dummy)">E-Wallet (GoPay / Dana)</option>
+                    </select>
+                </div>
+
+                <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-xl text-xs text-indigo-900">
+                    <b>Info Pembayaran Dummy:</b> Klik tombol bayar di bawah untuk menyelesaikan simulasi pembayaran. Status order akan menjadi <i>"Menunggu Konfirmasi"</i> sampai di-ACC oleh Admin.
+                </div>
+
+                <button onclick="processDummyPayment()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow-md transition">
+                    Bayar Sekarang (Dummy Pay)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= JAVASCRIPT LOGIC (HYBRID MYSQL + FALLBACK) ================= -->
+    <script>
+        // Data Awal Default (Digunakan otomatis jika MySQL XAMPP sedang tidak aktif / di Vercel tanpa Cloud DB)
+        const DEFAULT_USERS = [
+            { id: 1, name: 'Administrator Qondis', email: 'admin@qondis.com', password: 'admin123', role: 'admin' },
+            { id: 2, name: 'Budi Pembeli', email: 'user@qondis.com', password: 'user123', role: 'user' }
+        ];
+
+        const DEFAULT_PRODUCTS = [
+            { id: 1, name: 'Jaket Vintage Carhartt Detroit', category: 'Fashion', condition_item: 'Like New (95%)', price: 850000, stock: 3, image_url: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=600&q=80', description: 'Jaket vintage original kondisi sangat mulus, warna masih pekat.' },
+            { id: 2, name: 'Kamera Analog Canon AE-1', category: 'Elektronik', condition_item: 'Good (85%)', price: 1750000, stock: 2, image_url: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=600&q=80', description: 'Lensa bersih bebas jamur, lightmeter hidup normal.' },
+            { id: 3, name: 'Sepatu Nike Air Jordan 1 Low', category: 'Sneakers', condition_item: 'Very Good (90%)', price: 1200000, stock: 4, image_url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80', description: 'Size 42 lengkap dengan box original, tapak masih tebal.' },
+            { id: 4, name: 'Mechanical Keyboard Keychron K2', category: 'Elektronik', condition_item: 'Like New (98%)', price: 780000, stock: 5, image_url: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=600&q=80', description: 'Brown switch, hotswappable, kabel lengkap.' }
+        ];
+
+        // Inisialisasi Penyimpanan Cadangan
+        if (!localStorage.getItem('qondis_db_users')) localStorage.setItem('qondis_db_users', JSON.stringify(DEFAULT_USERS));
+        if (!localStorage.getItem('qondis_db_products')) localStorage.setItem('qondis_db_products', JSON.stringify(DEFAULT_PRODUCTS));
+        if (!localStorage.getItem('qondis_db_orders')) localStorage.setItem('qondis_db_orders', JSON.stringify([]));
+
+        let currentUser = JSON.parse(localStorage.getItem('qondis_active_user')) || null;
+        let productsData = [];
+        let cart = [];
+        let isBackendConnected = false;
+
+        const formatRupiah = (num) => 'Rp ' + Number(num).toLocaleString('id-ID');
+
+        function showAlert(msg, isSuccess = false) {
+            const box = document.getElementById('authAlert');
+            box.textContent = msg;
+            box.className = `mb-4 p-3 rounded-xl text-xs font-bold ${isSuccess ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`;
+            box.classList.remove('hidden');
+        }
+
+        // Cek apakah API MySQL XAMPP merespons atau gunakan Fallback
+        async function checkConnection() {
+            const badge = document.getElementById('dbModeBadge');
+            try {
+                const res = await fetch('/api/products');
+                if (res.ok) {
+                    isBackendConnected = true;
+                    badge.textContent = '● MySQL XAMPP Aktif';
+                    badge.className = 'ml-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700';
+                    return;
+                }
+            } catch (e) {}
+            isBackendConnected = false;
+            badge.textContent = '● Mode Lokal / Cloud Ready';
+            badge.className = 'ml-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700';
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            await checkConnection();
+            if (currentUser) setupDashboardByRole();
+        });
+
+        function toggleAuthMode(mode) {
+            document.getElementById('authAlert').classList.add('hidden');
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const btnLogin = document.getElementById('btnModeLogin');
+            const btnReg = document.getElementById('btnModeRegister');
+
+            if (mode === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                btnLogin.className = 'py-2 text-sm font-bold rounded-lg bg-white text-slate-900 shadow-sm';
+                btnReg.className = 'py-2 text-sm font-bold rounded-lg text-slate-500';
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                btnReg.className = 'py-2 text-sm font-bold rounded-lg bg-white text-slate-900 shadow-sm';
+                btnLogin.className = 'py-2 text-sm font-bold rounded-lg text-slate-500';
+            }
+        }
+
+        // Login Cepat 1x Klik
+        function quickLogin(email, password) {
+            document.getElementById('loginEmail').value = email;
+            document.getElementById('loginPassword').value = password;
+            document.getElementById('loginForm').requestSubmit();
+        }
+
+        // PROSES REGISTRASI (MySQL + Fallback Otomatis)
+        async function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim().toLowerCase();
+            const password = document.getElementById('regPassword').value;
+            const role = document.getElementById('regRole').value;
+
+            if (isBackendConnected) {
+                try {
+                    const res = await fetch('/api/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, email, password, role })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) return showAlert(data.message, false);
+                    toggleAuthMode('login');
+                    document.getElementById('loginEmail').value = email;
+                    return showAlert('Registrasi berhasil di MySQL! Silakan klik Masuk Sekarang.', true);
+                } catch (err) {}
+            }
+
+            // Fallback penyimpanan lokal
+            const users = JSON.parse(localStorage.getItem('qondis_db_users'));
+            if (users.find(u => u.email.toLowerCase() === email)) {
+                return showAlert('Email sudah terdaftar! Gunakan email lain.', false);
+            }
+            const newUser = { id: Date.now(), name, email, password, role };
+            users.push(newUser);
+            localStorage.setItem('qondis_db_users', JSON.stringify(users));
+
+            document.getElementById('registerForm').reset();
+            toggleAuthMode('login');
+            document.getElementById('loginEmail').value = email;
+            showAlert(`Akun "${name}" (${role.toUpperCase()}) berhasil dibuat! Silakan langsung login.`, true);
+        }
+
+        // PROSES LOGIN (MySQL + Fallback Otomatis)
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+            const password = document.getElementById('loginPassword').value;
+
+            if (isBackendConnected) {
+                try {
+                    const res = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        currentUser = data.user;
+                        localStorage.setItem('qondis_active_user', JSON.stringify(currentUser));
+                        return setupDashboardByRole();
+                    } else {
+                        return showAlert(data.message || 'Email atau password salah!', false);
+                    }
+                } catch (err) {}
+            }
+
+            // Fallback penyimpanan lokal
+            const users = JSON.parse(localStorage.getItem('qondis_db_users'));
+            const found = users.find(u => u.email.toLowerCase() === email && u.password === password);
+
+            if (!found) {
+                return showAlert('Email atau password tidak ditemukan! Silakan daftar di tab Registrasi.', false);
+            }
+
+            currentUser = { id: found.id, name: found.name, email: found.email, role: found.role };
+            localStorage.setItem('qondis_active_user', JSON.stringify(currentUser));
+            setupDashboardByRole();
+        }
+
+        function logout() {
+            localStorage.removeItem('qondis_active_user');
+            currentUser = null;
+            cart = [];
+            location.reload();
+        }
+
+        // PEMISAHAN DASHBOARD ADMIN VS USER
+        function setupDashboardByRole() {
+            document.getElementById('authSection').classList.add('hidden');
+            const badge = document.getElementById('roleBadge');
+            badge.classList.remove('hidden');
+
+            if (currentUser.role === 'admin') {
+                badge.textContent = 'DASHBOARD ADMIN';
+                badge.className = 'ml-2 text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800';
+                document.getElementById('adminNav').classList.remove('hidden');
+                document.getElementById('adminNav').classList.add('flex');
+                document.getElementById('adminNameDisplay').textContent = `Admin: ${currentUser.name}`;
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                loadAdminOrders();
+                loadProducts();
+            } else {
+                badge.textContent = 'DASHBOARD USER';
+                badge.className = 'ml-2 text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700';
+                document.getElementById('userNav').classList.remove('hidden');
+                document.getElementById('userNav').classList.add('flex');
+                document.getElementById('userNameDisplay').textContent = currentUser.name;
+                document.getElementById('userDashboard').classList.remove('hidden');
+                loadProducts();
+                loadUserOrders();
+            }
+        }
+
+        function switchUserTab(tab) {
+            const shopView = document.getElementById('userShopView');
+            const ordersView = document.getElementById('userOrdersView');
+            const btnShop = document.getElementById('tabBtnShop');
+            const btnOrders = document.getElementById('tabBtnOrders');
+
+            if (tab === 'shop') {
+                shopView.classList.remove('hidden');
+                ordersView.classList.add('hidden');
+                btnShop.className = 'px-3.5 py-2 rounded-lg text-sm font-semibold bg-indigo-50 text-indigo-600';
+                btnOrders.className = 'px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100';
+                loadProducts();
+            } else {
+                shopView.classList.add('hidden');
+                ordersView.classList.remove('hidden');
+                btnOrders.className = 'px-3.5 py-2 rounded-lg text-sm font-semibold bg-indigo-50 text-indigo-600';
+                btnShop.className = 'px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100';
+                loadUserOrders();
+            }
+        }
+
+        // LOAD KATALOG PRODUK
+        async function loadProducts() {
+            if (isBackendConnected) {
+                try {
+                    const res = await fetch('/api/products');
+                    if (res.ok) productsData = await res.json();
+                } catch (e) {}
+            } else {
+                productsData = JSON.parse(localStorage.getItem('qondis_db_products'));
+            }
+
+            const grid = document.getElementById('productGrid');
+            if (grid) {
+                grid.innerHTML = productsData.map(p => `
+                    <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between">
+                        <div>
+                            <div class="h-48 bg-slate-100 relative overflow-hidden">
+                                <img src="${p.image_url}" alt="${p.name}" class="w-full h-full object-cover">
+                                <span class="absolute top-3 left-3 bg-slate-900/80 text-white text-xs font-semibold px-2.5 py-1 rounded-lg">${p.condition_item}</span>
+                            </div>
+                            <div class="p-4">
+                                <span class="text-xs font-bold uppercase text-indigo-600">${p.category}</span>
+                                <h4 class="font-bold text-slate-900 mt-0.5 line-clamp-1">${p.name}</h4>
+                                <p class="text-xs text-slate-500 mt-1 line-clamp-2">${p.description || ''}</p>
+                            </div>
+                        </div>
+                        <div class="p-4 pt-3 flex items-center justify-between border-t border-slate-100 mt-2">
+                            <div>
+                                <p class="text-base font-extrabold text-slate-900">${formatRupiah(p.price)}</p>
+                                <p class="text-xs text-slate-500">Stok: ${p.stock}</p>
+                            </div>
+                            ${p.stock > 0 
+                                ? `<button onclick="addToCart(${p.id})" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition">+ Keranjang</button>`
+                                : `<span class="px-3 py-1.5 bg-slate-100 text-slate-400 text-xs font-bold rounded-xl">Habis</span>`
+                            }
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            const adminList = document.getElementById('adminProductList');
+            if (adminList) {
+                adminList.innerHTML = productsData.map(p => `
+                    <div class="py-3 flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <img src="${p.image_url}" class="w-12 h-12 rounded-xl object-cover bg-slate-100">
+                            <div>
+                                <p class="font-bold text-slate-900 text-sm">${p.name}</p>
+                                <p class="text-xs text-slate-500">${p.category} • ${p.condition_item} • Stok: <b>${p.stock}</b> • ${formatRupiah(p.price)}</p>
+                            </div>
+                        </div>
+                        <button onclick="deleteProduct(${p.id})" class="text-xs font-bold text-rose-600 hover:underline">Hapus</button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // KERANJANG & DUMMY PAY
+        function toggleCart(show) {
+            const modal = document.getElementById('cartModal');
+            if (show) {
+                renderCart();
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function addToCart(productId) {
+            const product = productsData.find(p => p.id === productId);
+            if (!product) return;
+
+            const existing = cart.find(item => item.id === productId);
+            if (existing) {
+                if (existing.quantity < product.stock) {
+                    existing.quantity += 1;
+                } else {
+                    return alert('Jumlah mencapai batas stok tersedia!');
+                }
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+            updateCartBadge();
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateCartBadge();
+            renderCart();
+        }
+
+        function updateCartBadge() {
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartCount').textContent = count;
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cartItemsContainer');
+            const totalEl = document.getElementById('cartTotalDisplay');
+
+            if (cart.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-400 text-center py-12">Keranjang belanja masih kosong.</p>`;
+                totalEl.textContent = 'Rp 0';
+                return;
+            }
+
+            let total = 0;
+            container.innerHTML = cart.map(item => {
+                total += item.price * item.quantity;
+                return `
+                    <div class="flex items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <div class="flex items-center gap-3">
+                            <img src="${item.image_url}" class="w-12 h-12 rounded-lg object-cover">
+                            <div>
+                                <p class="text-sm font-bold text-slate-900 line-clamp-1">${item.name}</p>
+                                <p class="text-xs text-slate-500">${item.quantity} x ${formatRupiah(item.price)}</p>
+                            </div>
+                        </div>
+                        <button onclick="removeFromCart(${item.id})" class="text-xs text-rose-600 font-bold hover:underline">Hapus</button>
+                    </div>
+                `;
+            }).join('');
+
+            totalEl.textContent = formatRupiah(total);
+        }
+
+        async function processDummyPayment() {
+            if (cart.length === 0) return alert('Keranjang masih kosong!');
+            const payment_method = document.getElementById('paymentMethod').value;
+
+            if (isBackendConnected) {
+                const res = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: currentUser.id, payment_method, items: cart })
+                });
+                const data = await res.json();
+                alert(data.message);
+            } else {
+                const orders = JSON.parse(localStorage.getItem('qondis_db_orders'));
+                const products = JSON.parse(localStorage.getItem('qondis_db_products'));
+                const total_price = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+
+                cart.forEach(item => {
+                    const p = products.find(prod => prod.id === item.id);
+                    if (p) p.stock = Math.max(0, p.stock - item.quantity);
+                });
+
+                orders.unshift({
+                    id: Math.floor(1000 + Math.random() * 9000),
+                    user_id: currentUser.id,
+                    buyer_name: currentUser.name,
+                    buyer_email: currentUser.email,
+                    total_price,
+                    payment_method,
+                    status: 'Menunggu Konfirmasi',
+                    created_at: new Date().toISOString(),
+                    items: cart.map(i => ({ name: i.name, quantity: i.quantity, price: i.price }))
+                });
+
+                localStorage.setItem('qondis_db_products', JSON.stringify(products));
+                localStorage.setItem('qondis_db_orders', JSON.stringify(orders));
+                alert('Pembayaran Dummy Berhasil! Pesanan kini menunggu di-ACC oleh Admin.');
+            }
+
+            cart = [];
+            updateCartBadge();
+            toggleCart(false);
+            switchUserTab('orders');
+        }
+
+        // RIWAYAT ORDER USER
+        async function loadUserOrders() {
+            let orders = [];
+            if (isBackendConnected) {
+                const res = await fetch(`/api/orders/user/${currentUser.id}`);
+                orders = await res.json();
+            } else {
+                const allOrders = JSON.parse(localStorage.getItem('qondis_db_orders'));
+                orders = allOrders.filter(o => o.user_id === currentUser.id);
+            }
+
+            const container = document.getElementById('userOrdersList');
+            if (orders.length === 0) {
+                container.innerHTML = `<div class="bg-white border border-slate-200 rounded-2xl p-8 text-center text-slate-500 text-sm">Belum ada riwayat pesanan. Silakan belanja terlebih dahulu.</div>`;
+                return;
+            }
+
+            container.innerHTML = orders.map(o => {
+                let badgeColor = 'bg-amber-100 text-amber-800';
+                if (o.status === 'Dikonfirmasi (ACC)') badgeColor = 'bg-emerald-100 text-emerald-800';
+                if (o.status === 'Ditolak') badgeColor = 'bg-rose-100 text-rose-800';
+
+                const itemsHtml = o.items.map(i => `<li>${i.quantity}x ${i.name} (${formatRupiah(i.price)})</li>`).join('');
+
+                return `
+                    <div class="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2.5">
+                                <span class="font-extrabold text-slate-900 text-sm">Order #${o.id}</span>
+                                <span class="text-xs font-bold px-2.5 py-0.5 rounded-full ${badgeColor}">${o.status}</span>
+                            </div>
+                            <p class="text-xs text-slate-500">Metode: <b>${o.payment_method}</b> • ${new Date(o.created_at).toLocaleString('id-ID')}</p>
+                            <ul class="text-xs text-slate-700 list-disc list-inside pt-1">${itemsHtml}</ul>
+                        </div>
+                        <div class="sm:text-right">
+                            <p class="text-xs text-slate-500">Total Pembayaran</p>
+                            <p class="text-lg font-extrabold text-indigo-600">${formatRupiah(o.total_price)}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // PANEL KONFIRMASI ADMIN (ACC / TOLAK)
+        async function loadAdminOrders() {
+            let orders = [];
+            if (isBackendConnected) {
+                const res = await fetch('/api/admin/orders');
+                orders = await res.json();
+            } else {
+                orders = JSON.parse(localStorage.getItem('qondis_db_orders'));
+            }
+
+            const tbody = document.getElementById('adminOrdersTable');
+            if (orders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">Belum ada pesanan masuk dari pembeli.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = orders.map(o => {
+                let badgeColor = 'bg-amber-100 text-amber-800';
+                if (o.status === 'Dikonfirmasi (ACC)') badgeColor = 'bg-emerald-100 text-emerald-800';
+                if (o.status === 'Ditolak') badgeColor = 'bg-rose-100 text-rose-800';
+
+                const itemsText = o.items.map(i => `${i.quantity}x ${i.name}`).join(', ');
+
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3.5 font-bold text-slate-900">#${o.id}</td>
+                        <td class="p-3.5">
+                            <p class="font-bold text-slate-900">${o.buyer_name}</p>
+                            <p class="text-xs text-slate-500">${o.buyer_email}</p>
+                        </td>
+                        <td class="p-3.5 text-slate-700">${itemsText}</td>
+                        <td class="p-3.5">
+                            <p class="font-bold text-slate-900">${formatRupiah(o.total_price)}</p>
+                            <p class="text-xs text-slate-500">${o.payment_method}</p>
+                        </td>
+                        <td class="p-3.5">
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-full ${badgeColor}">${o.status}</span>
+                        </td>
+                        <td class="p-3.5 text-right space-x-1.5">
+                            <button onclick="updateOrderStatus(${o.id}, 'Dikonfirmasi (ACC)')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition">
+                                ✓ ACC Pesanan
+                            </button>
+                            <button onclick="updateOrderStatus(${o.id}, 'Ditolak')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-lg transition">
+                                ✕ Tolak
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function updateOrderStatus(orderId, status) {
+            if (isBackendConnected) {
+                const res = await fetch(`/api/admin/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                const data = await res.json();
+                alert(data.message);
+            } else {
+                const orders = JSON.parse(localStorage.getItem('qondis_db_orders'));
+                const target = orders.find(o => o.id === orderId);
+                if (target) target.status = status;
+                localStorage.setItem('qondis_db_orders', JSON.stringify(orders));
+                alert(`Order #${orderId} berhasil diubah menjadi: ${status}`);
+            }
+            loadAdminOrders();
+        }
+
+        async function handleAddProduct(e) {
+            e.preventDefault();
+            const payload = {
+                id: Date.now(),
+                name: document.getElementById('prodName').value,
+                category: document.getElementById('prodCategory').value,
+                condition_item: document.getElementById('prodCondition').value,
+                price: Number(document.getElementById('prodPrice').value),
+                stock: Number(document.getElementById('prodStock').value),
+                image_url: document.getElementById('prodImage').value,
+                description: document.getElementById('prodDesc').value
+            };
+
+            if (isBackendConnected) {
+                await fetch('/api/products', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                const products = JSON.parse(localStorage.getItem('qondis_db_products'));
+                products.unshift(payload);
+                localStorage.setItem('qondis_db_products', JSON.stringify(products));
+            }
+
+            e.target.reset();
+            loadProducts();
+            alert('Produk baru berhasil ditambahkan!');
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Hapus produk ini?')) return;
+            if (isBackendConnected) {
+                await fetch(`/api/products/${id}`, { method: 'DELETE' });
+            } else {
+                let products = JSON.parse(localStorage.getItem('qondis_db_products'));
+                products = products.filter(p => p.id !== id);
+                localStorage.setItem('qondis_db_products', JSON.stringify(products));
+            }
+            loadProducts();
+        }
+    </script>
+</body>
+</html>
